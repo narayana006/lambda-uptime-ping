@@ -1,0 +1,12 @@
+{
+  "defaults": {
+    "timeout_seconds": 3,
+    "slow_ms": 500
+  },
+  "targets": [
+    { "name": "home", "url": "http://127.0.0.1:8808/" },
+    { "name": "reports", "url": "http://127.0.0.1:8808/slow" },
+    { "name": "billing-api", "url": "http://127.0.0.1:8808/broken" },
+    { "name": "login", "url": "http://127.0.0.1:8808/redirect", "expect_status": [301, 302] }
+  ]
+}
