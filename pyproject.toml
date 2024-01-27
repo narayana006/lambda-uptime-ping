@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lambda-uptime-ping"
+version = "0.1.0"
+description = "A tiny scheduled AWS Lambda that checks your URLs and posts to Slack when one is down or slow."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Narayana Vemburaj" }]
+# The checker and the local CLI use only the standard library.
+# boto3 is needed only inside Lambda, where the Python runtime provides it.
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "boto3>=1.28", "moto[dynamodb]>=5", "pyyaml>=6"]
+
+[project.scripts]
+uptime-ping = "uptime_ping.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

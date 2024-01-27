@@ -1,0 +1,10 @@
+{
+  "defaults": {
+    "timeout_seconds": 10,
+    "slow_ms": 2000,
+    "cert_warn_days": 14
+  },
+  "targets": [
+    { "name": "example", "url": "https://example.com" }
+  ]
+}
