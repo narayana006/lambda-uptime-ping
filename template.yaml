@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  lambda-uptime-ping: a scheduled Lambda function that checks the URLs in
+  src/config.json and posts to Slack when a status changes.
+
+Parameters:
+  SlackWebhookUrl:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Slack incoming webhook URL. Leave empty to only write alerts to the function log.
+  ScheduleExpression:
+    Type: String
+    Default: rate(5 minutes)
+    Description: How often to run, as an EventBridge rate() or cron() expression.
+
+Resources:
+  StateTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: target
+          AttributeType: S
+      KeySchema:
+        - AttributeName: target
+          KeyType: HASH
+
+  PingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Checks URLs and alerts on status changes.
+      CodeUri: src/
+      Handler: uptime_ping.handler.lambda_handler
+      Runtime: python3.12
+      Architectures:
+        - arm64
+      MemorySize: 128
+      Timeout: 60
+      Environment:
+        Variables:
+          STATE_TABLE: !Ref StateTable
+          SLACK_WEBHOOK_URL: !Ref SlackWebhookUrl
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !GetAtt StateTable.Arn
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: !Ref ScheduleExpression
+            Description: Runs the uptime checks.
+
+Outputs:
+  FunctionName:
+    Description: Name of the checker function.
+    Value: !Ref PingFunction
+  StateTableName:
+    Description: DynamoDB table holding the last known status of each target.
+    Value: !Ref StateTable
